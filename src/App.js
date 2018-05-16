@@ -8,7 +8,7 @@ const PLACES_URL = `https://maps.googleapis.com/maps/api/place/details/json?key=
 const DEFAULT_LOCATION = { lat: 36.334982, lng: -94.183662}
 const DEFAULT_ZOOM = 11;
 
-const PINS = [{
+const ALL_PINS = [{
   name: 'Crystal Bridges Museum of American Art',
   location: {lat:36.382455, lng:-94.202809},
   placeid: 'ChIJW5IzxBQayYcROxRb5FkDJq0'
@@ -58,7 +58,8 @@ class App extends Component {
   }
 
   state = {
-    map: null
+    map: null,
+    currentPins: []
   }
 
   componentDidMount() {
@@ -79,16 +80,38 @@ class App extends Component {
       zoom: DEFAULT_ZOOM,
       mapTypeControl: false
     });
+    map = this.setPins(map, ALL_PINS);
     this.setState({map: map});
+  }
+
+  setPins(map, pins) {
+    let newPins = [];
+    let bounds = new window.google.maps.LatLngBounds();
+
+    for(var i = 0; i < pins.length; i++) {
+      var position = pins[i].location;
+      var title = pins[i].name;
+      var marker = new window.google.maps.Marker({
+        position: position,
+        title: title,
+        map: map,
+        animation: window.google.maps.Animation.DROP,
+        id: i
+      });
+      bounds.extend(marker.position);
+      newPins.push(marker);
+    }
+    map.fitBounds(bounds);
+    this.setState({currentPins: newPins});
+    return map;
   }
 
   render() {
     return (
       <div className="App">
-        {PINS.map((pin)=> (
+        {ALL_PINS.map((pin)=> (
           <div className="location" key={pin.placeid}>
             <h3>{pin.name}</h3>
-            <p>({pin.location.lat}, {pin.location.lng})</p>
           </div>
         ))}
       </div>

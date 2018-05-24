@@ -118,6 +118,16 @@ class App extends Component {
     let bounds = new window.google.maps.LatLngBounds();
 
     pins.forEach((pin) => {
+      let locationId = pin.id;
+      let locationData = null;
+      if(this.state.venueData[locationId] !== undefined){
+        locationData = this.state.venueData[locationId];
+      } else {
+        locationData = {title: pin.title, contact: {formattedPhone: '(479)555-5555'}, location: {address: 'address'}};
+      }
+      let infoWindow = new window.google.maps.InfoWindow();
+      infoWindow.setContent(`<div><strong>${locationData.title}</strong><p>Phone# ${locationData.contact.formattedPhone}</p><p>Address - ${locationData.location.address}</p></div>`);
+
       let marker = new window.google.maps.Marker({
         position: pin.location,
         title: pin.title,
@@ -125,6 +135,7 @@ class App extends Component {
         animation: window.google.maps.Animation.DROP,
         id: pin.id
       });
+      marker.addListener('click', () => {infoWindow.open(map, marker)} );
       bounds.extend(marker.position);
       newPins.push(marker);
     });

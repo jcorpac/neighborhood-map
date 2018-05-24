@@ -126,7 +126,7 @@ class App extends Component {
         locationData = {title: pin.title, contact: {formattedPhone: '(479)555-5555'}, location: {address: 'address'}};
       }
       let infoWindow = new window.google.maps.InfoWindow();
-      infoWindow.setContent(`<div><strong>${locationData.title}</strong><p>Phone# ${locationData.contact.formattedPhone}</p><p>Address - ${locationData.location.address}</p></div>`);
+      infoWindow.setContent(`<div><strong>${locationData.title}</strong><p>Phone# ${locationData.contact.formattedPhone}</p><p>Address - ${locationData.location.address}</p><p><a href="https://foursquare.com/v/${pin.id}/">More Info</a></p></div>`);
 
       let marker = new window.google.maps.Marker({
         position: pin.location,

@@ -58,6 +58,7 @@ class App extends Component {
     super(props);
     this.initMap = this.initMap.bind(this);
     this.filterPins = this.filterPins.bind(this);
+    //this.setPins = this.setPins.bind(this);
     this.clearMarkers = this.clearMarkers.bind(this);
   }
 
@@ -81,7 +82,8 @@ class App extends Component {
       }).then((jsonData) => {
         venueData[pin.venueId] = jsonData.response.venue;
         return jsonData;
-      })
+      }).catch((error) => {console.error(error);})
+      return true;
     });
     this.setState({venueData: venueData});
   }
@@ -115,32 +117,29 @@ class App extends Component {
     let newPins = [];
     let bounds = new window.google.maps.LatLngBounds();
 
-    for(var i = 0; i < pins.length; i++) {
-      var position = pins[i].location;
-      var title = pins[i].title;
-      var marker = new window.google.maps.Marker({
-        position: position,
-        title: title,
+    pins.forEach((pin) => {
+      let marker = new window.google.maps.Marker({
+        position: pin.location,
+        title: pin.title,
         map: map,
         animation: window.google.maps.Animation.DROP,
-        id: pins[i].id
+        id: pin.id
       });
       bounds.extend(marker.position);
       newPins.push(marker);
-    }
+    });
     map.fitBounds(bounds);
     this.setState({currentPins: newPins});
     return map;
   }
 
   clearMarkers() {
-    this.setState({currentPins: this.state.currentPins.map((marker) => {marker.setMap(null)})});
+    this.setState({currentPins: this.state.currentPins.map((marker) => {marker.setMap(null); return true;})});
   }
 
   filterPins(event) {
     this.clearMarkers();
     let currentPins = ALL_PINS;
-
     if(event.target.value !== "") {
       currentPins = ALL_PINS.filter((pin) => {
         return pin.title.toLowerCase().search(event.target.value.toLowerCase()) !== -1;
@@ -152,12 +151,20 @@ class App extends Component {
     this.setState({map: map});
   }
 
+  locationClicked(locationId) {
+    for(let pin of this.state.currentPins) {
+      if(pin.id === locationId)
+        pin.setAnimation(window.google.maps.Animation.BOUNCE);
+        pin.setAnimation(null);
+    }
+  }
+
   render() {
     return (
       <div className="App">
         <input className="filterInput" type="text" placeholder="Search" onChange={this.filterPins}/>
         {this.state.currentPins.map((pin)=> (
-          <div className="location" key={pin.id}>
+          <div className="location" key={pin.id} onClick={() => (this.locationClicked(pin.id))}>
             <h4>{pin.title}</h4>
           </div>
         ))}

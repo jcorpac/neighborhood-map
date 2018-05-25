@@ -131,13 +131,15 @@ class App extends Component {
           locationData.title = thisVenue.title ? thisVenue.title : pin.title;
           locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
           locationData.address = thisVenue.location.address ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
+          locationData.website = thisVenue.url ? `<a href=${thisVenue.url}>${thisVenue.url}</a>` : 'Not Available';
         } else {
-          locationData = {title: pin.title, phone: 'Phone number not available', address: 'Address not available'};
+          locationData = {title: pin.title, phone: 'Phone number not available', address: 'Address not available', website:'Website not available'};
         }
         infoWindow.setContent(`<div>
           <strong>${locationData.title}</strong>
           <p>Phone# - ${locationData.phone}</p>
           <p>Address - ${locationData.address}</p>
+          <p>Website - ${locationData.website}<p>
           <p><a href="https://foursquare.com/v/${pin.id}/">More Info on FourSquare</a></p>
           <p>Location data provided by FourSquare</p>
           </div>`);

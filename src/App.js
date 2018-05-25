@@ -3,8 +3,8 @@ import './App.css';
 
 const GOOGLE_API_KEY = 'AIzaSyDara-LkUhcFTHJ6lgV_iprMMsbWtZA9fI';
 const MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&v=3&callback=initMap`;
-const FOURSQUARE_CLIENT_ID = 'KUBW02SULCU5BKARC0I5CBP2JO1H04JV0TVNERTJQ4OYYYFB';
-const FOURSQUARE_CLIENT_SECRET = 'YXXDENZQH2Z35H15KB0FBRVMGXYMAGXDEBINGPBVKTMNUTF4';
+const FOURSQUARE_CLIENT_ID = 'DNF1NOLDSH02IGRFWK2FIKRIFHPXUNF3TPDY3LX4V5XADENE';
+const FOURSQUARE_CLIENT_SECRET = 'IGHV53OUPXP24ELLVUOCJUEVT1NSMZF1MT1YKOI1JZVYDMIO';
 const FOURSQUARE_VENUE_URL = 'https://api.foursquare.com/v2/venues/';
 
 const DEFAULT_LOCATION = { lat: 36.334982, lng: -94.183662};
@@ -58,7 +58,6 @@ class App extends Component {
     super(props);
     this.initMap = this.initMap.bind(this);
     this.filterPins = this.filterPins.bind(this);
-    //this.setPins = this.setPins.bind(this);
     this.clearMarkers = this.clearMarkers.bind(this);
   }
 
@@ -68,19 +67,17 @@ class App extends Component {
     venueData: {}
   }
 
-  generateVenueURL(venueId) {
-    return `${FOURSQUARE_VENUE_URL}${venueId}?client_id=${FOURSQUARE_CLIENT_ID}&client_secret=${FOURSQUARE_CLIENT_SECRET}&v=20180523`
-  }
-
   getVenueData() {
     let venueData = {};
+    let venueURL = ''
     ALL_PINS.map((pin) => {
-      fetch(this.generateVenueURL(pin.id))
+      venueURL = `${FOURSQUARE_VENUE_URL}${pin.id}?client_id=${FOURSQUARE_CLIENT_ID}&client_secret=${FOURSQUARE_CLIENT_SECRET}&v=20180523`;
+      fetch(venueURL)
       .then((response) => {
         if(response.ok) {return response.json();}
         throw new Error('Network response not OK');
       }).then((jsonData) => {
-        venueData[pin.venueId] = jsonData.response.venue;
+        venueData[pin.id] = jsonData.response.venue;
         return jsonData;
       }).catch((error) => {console.error(error);})
       return true;
@@ -92,7 +89,7 @@ class App extends Component {
     window.initMap = this.initMap;
 
     this.setState({currentPins: ALL_PINS});
-
+    this.getVenueData();
     // Add Google Maps query to the end of the page body.
     const bodyTag = document.querySelector('body');
     let mapsTag = document.createElement('script');
@@ -110,7 +107,6 @@ class App extends Component {
     });
     map = this.setPins(map, ALL_PINS);
     this.setState({map: map});
-    this.getVenueData();
   }
 
   setPins(map, pins) {
@@ -119,14 +115,8 @@ class App extends Component {
 
     pins.forEach((pin) => {
       let locationId = pin.id;
-      let locationData = null;
-      if(this.state.venueData[locationId] !== undefined){
-        locationData = this.state.venueData[locationId];
-      } else {
-        locationData = {title: pin.title, contact: {formattedPhone: '(479)555-5555'}, location: {address: 'address'}};
-      }
+      let locationData = {};
       let infoWindow = new window.google.maps.InfoWindow();
-      infoWindow.setContent(`<div><strong>${locationData.title}</strong><p>Phone# ${locationData.contact.formattedPhone}</p><p>Address - ${locationData.location.address}</p><p><a href="https://foursquare.com/v/${pin.id}/">More Info</a></p></div>`);
 
       let marker = new window.google.maps.Marker({
         position: pin.location,
@@ -135,7 +125,24 @@ class App extends Component {
         animation: window.google.maps.Animation.DROP,
         id: pin.id
       });
-      marker.addListener('click', () => {infoWindow.open(map, marker)} );
+      marker.addListener('click', () => {
+        if(this.state.venueData[locationId] !== undefined){
+          let thisVenue = this.state.venueData[locationId];
+          locationData.title = thisVenue.title ? thisVenue.title : pin.title;
+          locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
+          locationData.address = thisVenue.location.address ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
+        } else {
+          locationData = {title: pin.title, phone: 'Phone number not available', address: 'Address not available'};
+        }
+        infoWindow.setContent(`<div>
+          <strong>${locationData.title}</strong>
+          <p>Phone# - ${locationData.phone}</p>
+          <p>Address - ${locationData.address}</p>
+          <p><a href="https://foursquare.com/v/${pin.id}/">More Info on FourSquare</a></p>
+          <p>Location data provided by FourSquare</p>
+          </div>`);
+        infoWindow.open(map, marker)
+      });
       bounds.extend(marker.position);
       newPins.push(marker);
     });

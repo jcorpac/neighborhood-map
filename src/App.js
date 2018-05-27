@@ -128,20 +128,20 @@ class App extends Component {
       marker.addListener('click', () => {
         if(this.state.venueData[locationId] !== undefined){
           let thisVenue = this.state.venueData[locationId];
-          locationData.title = thisVenue.title ? thisVenue.title : pin.title;
+          locationData.title = thisVenue.name ? thisVenue.name : pin.title;
           locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
-          locationData.address = thisVenue.location.address ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
+          locationData.address = thisVenue.location.formattedAddress ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
           locationData.website = thisVenue.url ? `<a href=${thisVenue.url}>${thisVenue.url}</a>` : 'Not Available';
         } else {
           locationData = {title: pin.title, phone: 'Phone number not available', address: 'Address not available', website:'Website not available'};
         }
-        infoWindow.setContent(`<div>
-          <strong>${locationData.title}</strong>
-          <p>Phone# - ${locationData.phone}</p>
+        infoWindow.setContent(`<div tabindex="0">
+          <h4>${locationData.title}</h4>
+          <p>Phone - ${locationData.phone}</p>
           <p>Address - ${locationData.address}</p>
           <p>Website - ${locationData.website}<p>
           <p><a href="https://foursquare.com/v/${pin.id}/">More Info on FourSquare</a></p>
-          <p>Location data provided by FourSquare</p>
+          <p>Venue data provided by FourSquare</p>
           </div>`);
         infoWindow.open(map, marker)
       });

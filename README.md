@@ -13,7 +13,11 @@ This application was created as part of the Udacity Front End Nanodegree to demo
 
 ## Installation
 
-This application requires that a copy of Node.JS and the Node Package Manager (npm) be installed on the computer that it is running on. To install the application, from the console, use `git clone https://github.com/jcorpac/neighborhood-map.git` to create a copy of the application on your server, then use `cd neighborhood-map` to enter the project directory. Once in the project directory, run `npm install` to download the required Node.js modules.
+This application requires that git, a copy of Node.JS, and the Node Package Manager (npm) be installed on the computer that it is running on.
+
+1. From the console, use `git clone https://github.com/jcorpac/neighborhood-map.git` to create a copy of the application on your server.
+2. Use `cd neighborhood-map` to enter the project directory.
+3. Run `npm install` to download the required Node.js modules.
 
 Once the Node modules are installed, you can start the server by running `npm start` from the project directory. The application will be available on that machine, at port 3000. If you have a web browser on the machine, then a start program will automatically open a browser to `http://localhost:3000` and display the application.
 

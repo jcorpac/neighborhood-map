@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
+import Map from './components/Map';
+import LocationList from './components/LocationList'
 import './App.css';
 
-const GOOGLE_API_KEY = 'AIzaSyDara-LkUhcFTHJ6lgV_iprMMsbWtZA9fI';
-const MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&v=3&callback=initMap`;
 const FOURSQUARE_CLIENT_ID = 'DNF1NOLDSH02IGRFWK2FIKRIFHPXUNF3TPDY3LX4V5XADENE';
 const FOURSQUARE_CLIENT_SECRET = 'IGHV53OUPXP24ELLVUOCJUEVT1NSMZF1MT1YKOI1JZVYDMIO';
-const FOURSQUARE_VENUE_URL = 'https://api.foursquare.com/v2/venues/';
+const FOURSQUARE_VENUE_URL = 'https://api.4foursquare.com/v2/venues/';
 
 const DEFAULT_LOCATION = { lat: 36.334982, lng: -94.183662};
 const DEFAULT_ZOOM = 11;
@@ -59,6 +59,7 @@ class App extends Component {
     this.initMap = this.initMap.bind(this);
     this.filterPins = this.filterPins.bind(this);
     this.clearMarkers = this.clearMarkers.bind(this);
+    this.locationClicked = this.locationClicked.bind(this);
   }
 
   state = {
@@ -90,13 +91,6 @@ class App extends Component {
 
     this.setState({currentPins: ALL_PINS});
     this.getVenueData();
-    // Add Google Maps query to the end of the page body.
-    const bodyTag = document.querySelector('body');
-    let mapsTag = document.createElement('script');
-    mapsTag.src = MAPS_URL;
-    mapsTag.async = true;
-    mapsTag.defer = true;
-    bodyTag.appendChild(mapsTag);
   }
 
   initMap() {
@@ -115,8 +109,6 @@ class App extends Component {
 
     pins.forEach((pin) => {
       let locationId = pin.id;
-      let locationData = {};
-      let infoWindow = new window.google.maps.InfoWindow();
 
       let marker = new window.google.maps.Marker({
         position: pin.location,
@@ -126,24 +118,8 @@ class App extends Component {
         id: pin.id
       });
       marker.addListener('click', () => {
-        if(this.state.venueData[locationId] !== undefined){
-          let thisVenue = this.state.venueData[locationId];
-          locationData.title = thisVenue.name ? thisVenue.name : pin.title;
-          locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
-          locationData.address = thisVenue.location.formattedAddress ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
-          locationData.website = thisVenue.url ? `<a href=${thisVenue.url}>${thisVenue.url}</a>` : 'Not Available';
-        } else {
-          locationData = {title: pin.title, phone: 'Phone number not available', address: 'Address not available', website:'Website not available'};
-        }
-        infoWindow.setContent(`<div tabindex="0">
-          <h4>${locationData.title}</h4>
-          <p>Phone - ${locationData.phone}</p>
-          <p>Address - ${locationData.address}</p>
-          <p>Website - ${locationData.website}<p>
-          <p><a href="https://foursquare.com/v/${pin.id}/">More Info on FourSquare</a></p>
-          <p>Venue data provided by FourSquare</p>
-          </div>`);
-        infoWindow.open(map, marker)
+        // Open InfoWindow
+        this.openInfoWindow(locationId, marker);
       });
       bounds.extend(marker.position);
       newPins.push(marker);
@@ -156,6 +132,31 @@ class App extends Component {
   clearMarkers() {
     this.setState({currentPins: this.state.currentPins.map((marker) => {marker.setMap(null); return true;})});
   }
+
+  openInfoWindow(locationId, marker) {
+    let locationData = {};
+    let infoWindow = new window.google.maps.InfoWindow();
+    let infoContent = '';
+    if(this.state.venueData[locationId] !== undefined){
+      let thisVenue = this.state.venueData[locationId];
+      locationData.title = thisVenue.name ? thisVenue.name : marker.title;
+      locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
+      locationData.address = thisVenue.location.formattedAddress ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
+      locationData.website = thisVenue.url ? `<a href=${thisVenue.url}>${thisVenue.url}</a>` : 'Not Available';
+      infoContent = `<div tabindex="0">
+        <h4 role="heading">${locationData.title}</h4>
+        <p>Phone# ${locationData.phone}</p>
+        <p>Address: ${locationData.address}</p>
+        <p>Website: ${locationData.website}<p>
+        <p><a href="https://foursquare.com/v/${marker.id}/">More Info on FourSquare</a></p>
+        <p>Venue data provided by FourSquare</p>
+        </div>`
+    } else {
+      infoContent = 'Unable to retrieve data from FourSquare';
+    }
+    infoWindow.setContent(infoContent);
+    infoWindow.open(this.state.map, marker);
+    }
 
   filterPins(event) {
     this.clearMarkers();
@@ -173,21 +174,19 @@ class App extends Component {
 
   locationClicked(locationId) {
     for(let pin of this.state.currentPins) {
-      if(pin.id === locationId)
+      if(pin.id === locationId){
         pin.setAnimation(window.google.maps.Animation.BOUNCE);
         pin.setAnimation(null);
+        this.openInfoWindow(locationId, pin);
+      }
     }
   }
 
   render() {
     return (
       <div className="App">
-        <input className="filterInput" type="text" placeholder="Search" onChange={this.filterPins}/>
-        {this.state.currentPins.map((pin)=> (
-          <div className="location" key={pin.id} onClick={() => (this.locationClicked(pin.id))}>
-            <h4>{pin.title}</h4>
-          </div>
-        ))}
+        <Map/>
+        <LocationList currentPins={this.state.currentPins} locationClicked={this.locationClicked} filterPins={this.filterPins} />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-.container {
+.App {
   display: flex;
   flex-direction: row;
   height: 100vh;
@@ -10,7 +10,7 @@
   min-width: 65vw;
 }
 
-.App {
+.LocationList {
   width: 35vw;
   height: 100vh;
   overflow-y: scroll;
@@ -35,12 +35,12 @@
     width: 100vw;
   }
 
-  .App {
+  .LocationList {
     height: 55vh;
     width: 100vw;
   }
 
-  .container {
+  .App {
     flex-direction: column;
   }
 }

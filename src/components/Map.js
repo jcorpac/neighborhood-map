@@ -6,7 +6,7 @@ const MAPS_URL = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&
 class Map extends Component {
 
   loadError(error) {
-    alert("Error loading Google Maps");
+    alert("An error occurred loading Google Maps");
     console.error(`An error occurred while attempting to open ${MAPS_URL}`);
   }
 

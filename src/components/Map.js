@@ -10,7 +10,12 @@ class Map extends Component {
     console.error(`An error occurred while attempting to open ${MAPS_URL}`);
   }
 
+  gm_authFailure() {
+    alert("An error occurred loading Google Maps\nAuthentication error, check API key");
+  }
+
   componentWillMount() {
+    window.gm_authFailure = this.gm_authFailure;
     // Add Google Maps query to the end of the page body.
     const bodyTag = document.querySelector('body');
     let mapsTag = document.createElement('script');

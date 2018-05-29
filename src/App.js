@@ -10,6 +10,7 @@ const FOURSQUARE_VENUE_URL = 'https://api.foursquare.com/v2/venues/';
 const DEFAULT_LOCATION = { lat: 36.334982, lng: -94.183662};
 const DEFAULT_ZOOM = 11;
 
+// Default location data
 const ALL_PINS = [{
   title: 'Crystal Bridges Museum of American Art',
   location: {lat:36.382455, lng:-94.202809},
@@ -72,17 +73,20 @@ class App extends Component {
     let venueData = {};
     let venueURL = ''
     ALL_PINS.map((pin) => {
+      // Collect FourSquare data for each location
       venueURL = `${FOURSQUARE_VENUE_URL}${pin.id}?client_id=${FOURSQUARE_CLIENT_ID}&client_secret=${FOURSQUARE_CLIENT_SECRET}&v=20180523`;
       fetch(venueURL)
       .then((response) => {
         if(response.ok) {return response.json();}
         throw new Error('Network response not OK');
       }).then((jsonData) => {
+        // Store results in an object using the FourSquare venueId as the key.
         venueData[pin.id] = jsonData.response.venue;
         return jsonData;
       }).catch((error) => {console.error(error);})
       return true;
     });
+    // Store resulting venueData object in this.state.venueData;
     this.setState({venueData: venueData});
   }
 
@@ -108,8 +112,6 @@ class App extends Component {
     let bounds = new window.google.maps.LatLngBounds();
 
     pins.forEach((pin) => {
-      let locationId = pin.id;
-
       let marker = new window.google.maps.Marker({
         position: pin.location,
         title: pin.title,
@@ -118,8 +120,8 @@ class App extends Component {
         id: pin.id
       });
       marker.addListener('click', () => {
-        // Open InfoWindow
-        this.openInfoWindow(locationId, marker);
+        // When the pin is clicked, create an InfoWindow with the requested data.
+        this.openInfoWindow(pin.id, marker);
       });
       bounds.extend(marker.position);
       newPins.push(marker);
@@ -138,11 +140,14 @@ class App extends Component {
     let infoWindow = new window.google.maps.InfoWindow();
     let infoContent = '';
     if(this.state.venueData[locationId] !== undefined){
+      // If the data for this location ID exists in this.state.venueData then collect the required fields into the locationData object.
+      // Do not assume that all data fields are present. If the data does not exist, then use a placeholder value.
       let thisVenue = this.state.venueData[locationId];
       locationData.title = thisVenue.name ? thisVenue.name : marker.title;
       locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
       locationData.address = thisVenue.location.formattedAddress ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
       locationData.website = thisVenue.url ? `<a href=${thisVenue.url} target="_blank">${thisVenue.url}</a>` : 'Not Available';
+      // Insert the locationData object into the infoContent string to be displayed.
       infoContent = `<div tabindex="0">
         <h4 role="heading">${locationData.title}</h4>
         <p>Phone# ${locationData.phone}</p>
@@ -152,11 +157,12 @@ class App extends Component {
         <p>Venue data provided by FourSquare</p>
         </div>`
     } else {
+      // If there isn't an entry for this locationId, then use an error message.
       infoContent = 'Unable to retrieve data from FourSquare';
     }
     infoWindow.setContent(infoContent);
     infoWindow.open(this.state.map, marker);
-    }
+  }
 
   filterPins(event) {
     this.clearMarkers();

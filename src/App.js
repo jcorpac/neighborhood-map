@@ -142,13 +142,13 @@ class App extends Component {
       locationData.title = thisVenue.name ? thisVenue.name : marker.title;
       locationData.phone = thisVenue.contact.formattedPhone ? thisVenue.contact.formattedPhone : 'Phone number not available';
       locationData.address = thisVenue.location.formattedAddress ? thisVenue.location.formattedAddress.join(' ') : 'Address not available';
-      locationData.website = thisVenue.url ? `<a href=${thisVenue.url}>${thisVenue.url}</a>` : 'Not Available';
+      locationData.website = thisVenue.url ? `<a href=${thisVenue.url} target="_blank">${thisVenue.url}</a>` : 'Not Available';
       infoContent = `<div tabindex="0">
         <h4 role="heading">${locationData.title}</h4>
         <p>Phone# ${locationData.phone}</p>
         <p>Address: ${locationData.address}</p>
         <p>Website: ${locationData.website}<p>
-        <p><a href="https://foursquare.com/v/${marker.id}/">More Info on FourSquare</a></p>
+        <p><a href="https://foursquare.com/v/${marker.id}/" target="_blank">More Info on FourSquare</a></p>
         <p>Venue data provided by FourSquare</p>
         </div>`
     } else {
